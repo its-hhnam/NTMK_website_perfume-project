@@ -57,13 +57,19 @@ client = init_gemini_client()
 # 5. PHẦN BANNER GIỚI THIỆU (HERO SECTION)
 # ==============================================================================
 st.markdown("""
-<div style="padding: 20px; border-radius: 10px; background-color: #fdf2f4; text-align: center;">
-    <h1 style="color: #db2777; margin-bottom: 5px;">🌸 BLOOMING SEASON - MÙA XUÂN SỚM MAI</h1>
-    <h3 style="color: #9d174d; font-style: italic; margin-top: 0;">"Hương thơm của những khởi đầu an lành"</h3>
-    <p style="color: #4b5563; font-size: 16px; max-width: 800px; margin: 0 auto;">
-        Sớm Xuân không gợi một mùa xuân rực rỡ đã nở rộ, mà gợi khoảnh khắc đầu tiên của ngày đầu năm: khi sương sớm còn vương trên cánh lá, mở cửa đón làn gió se mát, thưởng thức chén trà ấm với sự giao thoa hài hòa giữa Sen hồng, Hoa nhài, Trà xanh và Gỗ đàn hương.
-    </p>
-</div>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+/* === DÁN DUY NHẤT VÀO ĐÂY (PHỦ TOÀN BỘ TRANG VÀ CÁC CỘT) === */
+.stApp {
+    background: linear-gradient(135deg, #FFF0F5 0%, #F0FDF4 100%) !important;
+    color: #374151 !important;
+}
+
+html, body, [class*="css"] {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+</style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
