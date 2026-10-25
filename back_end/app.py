@@ -61,7 +61,6 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
-/* === DÁN DUY NHẤT VÀO ĐÂY (PHỦ TOÀN BỘ TRANG VÀ CÁC CỘT) === */
 .stApp {
     background: linear-gradient(135deg, #FFF0F5 0%, #F0FDF4 100%) !important;
     color: #374151 !important;
@@ -69,6 +68,35 @@ st.markdown("""
 
 html, body, [class*="css"] {
     font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.note-box { 
+    background: #F9FAFB; 
+    border-left: 4px solid #10B981; 
+    padding: 12px 16px; 
+    border-radius: 0 12px 12px 0; 
+    margin-bottom: 12px; 
+} 
+
+html, body, [class*="css"], .stApp, p, span, div, li, label, .stMarkdown { 
+    color: #1F2937 !important; 
+} 
+
+h1, h2, h3, h4, h5, h6, .stHeading, [data-testid="stHeader"] { 
+    color: #9D174D !important; 
+} 
+
+.stCaption, small { 
+    color: #4B5563 !important; 
+} 
+
+[data-testid="stChatMessage"] p, [data-testid="stChatMessage"] span, [data-testid="stChatMessageContent"] { 
+    color: #1F2937 !important; 
+} 
+
+[data-testid="stChatInput"] textarea { 
+    color: #111827 !important; 
+    -webkit-text-fill-color: #111827 !important; 
 }
 </style>
 """, unsafe_allow_html=True)
