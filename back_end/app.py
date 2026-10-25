@@ -213,64 +213,74 @@ with col_chat:
             with st.chat_message("user"):
                 st.markdown(user_input)
                 
-        # 2. Xử lý gọi API Gemini (kèm cơ chế Retry khi quá tải)
+        # 2. Xử lý gọi API Gemini (Tối ưu tốc độ + Streaming + Retry khi quá tải)
         if client:
             with chat_container:
                 with st.chat_message("assistant"):
-                    # Tạo placeholder để cập nhật trạng thái thông báo chờ linh hoạt
                     status_placeholder = st.empty()
                     message_placeholder = st.empty()
-            
                     max_retries = 3
-                    wait_time = 2  # Thời gian chờ khởi điểm (giây)
-                    bot_reply = None
-            
+                    wait_time = 2  # Thời gian chờ ban đầu (giây)
+                    bot_reply = ""
+                    
+                    # --- TỐI ƯU 1: Cấu hình System Instruction riêng & giới hạn token ---
+                    generation_config = {
+                        "system_instruction": SYSTEM_INSTRUCTION,
+                        "max_output_tokens": 600,  # Giới hạn độ dài câu trả lời ngắn gọn, tinh tế
+                        "temperature": 0.7
+                    }
+                    
+                    # --- TỐI ƯU 2: Sliding Window - Chỉ lấy 6 tin nhắn gần nhất ---
+                    recent_messages = st.session_state.messages[-6:]
+                    contents_payload = [f"{m['role'].upper()}: {m['content']}" for m in recent_messages]
+                    
                     for attempt in range(1, max_retries + 1):
                         try:
                             status_placeholder.markdown(
                                 f"🌸 *Blooming Bot đang suy nghĩ...* *(Lần thử {attempt}/{max_retries})*" 
                                 if attempt > 1 else "🌸 *Blooming Bot đang suy nghĩ...*"
                             )
-                        
-                            # Đóng gói ngữ cảnh hội thoại
-                            contents_payload = [SYSTEM_INSTRUCTION]
-                            for m in st.session_state.messages:
-                                contents_payload.append(f"{m['role'].upper()}: {m['content']}")
-                        
-                            # Gọi mô hình gemini-3.8-flash
-                            response = client.models.generate_content(
+                            
+                            # --- TỐI ƯU 3: Gọi Stream để chữ hiển thị ngay tức thì ---
+                            response_stream = client.models.generate_content_stream(
                                 model="gemini-3.8-flash",
-                                contents=contents_payload
+                                contents=contents_payload,
+                                config=generation_config
                             )
-                            bot_reply = response.text
-                            break  # Gọi thành công -> thoát vòng lặp retry
-                    
+                            
+                            def stream_generator():
+                                for chunk in response_stream:
+                                    if chunk.text:
+                                        yield chunk.text
+                                        
+                            # Xóa thông báo chờ ngay khi luồng dữ liệu bắt đầu trả về
+                            status_placeholder.empty()
+                            bot_reply = message_placeholder.write_stream(stream_generator())
+                            break  # Thành công -> thoát vòng lặp retry
+                            
                         except Exception as e:
                             err_str = str(e).lower()
-                            # Nhận diện lỗi quá tải, nghẽn mạng hoặc chạm quota (429, 503, resourceexhausted, overloaded)
-                            is_spike = any(keyword in err_str for keyword in ["429", "503", "resourceexhausted", "quota", "overloaded", "demand"])
-                    
+                            # Bắt lỗi quá tải, nghẽn mạng hoặc chạm quota
+                            is_spike = any(k in err_str for k in ["429", "503", "resourceexhausted", "quota", "overloaded", "demand"])
+                            
                             if attempt < max_retries and is_spike:
-                                # Đếm ngược thời gian chờ trực tiếp trên giao diện
                                 for remaining in range(wait_time, 0, -1):
                                     status_placeholder.warning(
-                                        f"⏳ **Hệ thống AI đang có lượng truy cập tăng cao.** Đang thử kết nối lại sau **{remaining}s** (Lần {attempt}/{max_retries})..."
+                                        f"⏳ **Lượng truy cập AI đang tăng cao.** Đang kết nối lại sau **{remaining}s** (Lần {attempt}/{max_retries})..."
                                     )
                                     time.sleep(1)
-                                wait_time *= 2  # Tăng gấp đôi thời gian chờ cho lần sau (2s -> 4s -> 8s)
+                                wait_time *= 2  # Exponential backoff: 2s -> 4s -> 8s
                             else:
-                                # Nếu hết lượt retry hoặc gặp lỗi khác không phải quá tải
                                 status_placeholder.empty()
                                 bot_reply = (
                                     "⚠️ *Máy chủ AI hiện đang chịu tải rất lớn từ nhiều lượt truy cập cùng lúc.* "
                                     "Bạn vui lòng chờ khoảng 1-2 phút rồi gửi lại câu hỏi giúp mình nhé!"
                                     if is_spike else f"Đã xảy ra sự cố khi kết nối mô hình: {str(e)}"
                                 )
+                                message_placeholder.markdown(bot_reply)
                                 break
-                        
-                    # Xóa dòng thông báo chờ và hiển thị câu trả lời chính thức
-                    status_placeholder.empty()
-                    message_placeholder.markdown(bot_reply)
+                                
+                    # Lưu tin nhắn của bot vào lịch sử hội thoại
                     st.session_state.messages.append({"role": "assistant", "content": bot_reply})
         else:
             with chat_container:
