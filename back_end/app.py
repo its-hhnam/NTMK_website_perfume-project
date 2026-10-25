@@ -98,6 +98,105 @@ h1, h2, h3, h4, h5, h6, .stHeading, [data-testid="stHeader"] {
     color: #111827 !important; 
     -webkit-text-fill-color: #111827 !important; 
 }
+
+/* Khóa nền khung viền ngoài của ô nhập */
+[data-testid="stChatInput"] {
+    background-color: #FFFFFF !important;
+    border: 1.5px solid #F472B6 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Khóa nền và chữ của vùng gõ văn bản */
+[data-testid="stChatInput"] textarea {
+    background-color: #FFFFFF !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+}
+
+/* Chữ mờ gợi ý (placeholder) */
+[data-testid="stChatInput"] textarea::placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+}
+
+/* Nút gửi (icon mũi tên) luôn giữ màu hồng sen */
+[data-testid="stChatInput"] button {
+    color: #9D174D !important;
+    background: transparent !important;
+}
+
+[data-testid="stTable"], [data-testid="stDataFrame"], table {
+    background-color: #FFFFFF !important;
+    color: #1F2937 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+}
+
+/* Ép nền các ô tiêu đề và nội dung */
+th, td {
+    background-color: #FFFFFF !important;
+    color: #1F2937 !important;
+    border-color: #F3E8FF !important;
+}
+
+/* Dòng tiêu đề bảng có màu nền hồng phấn nhẹ */
+th {
+    background-color: #FFF0F5 !important;
+    color: #9D174D !important;
+}
+
+/* Khóa nền trắng và định dạng bảng HTML */
+table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    background-color: #FFFFFF !important;
+    color: #1F2937 !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    margin-bottom: 1.2rem !important;
+    font-size: 0.9rem !important;
+}
+
+th, td {
+    padding: 10px 12px !important;
+    border: 1px solid #F3E8FF !important;
+    text-align: center !important;
+    color: #1F2937 !important;
+}
+
+th:first-child, td:first-child {
+    text-align: left !important; /* Căn trái cột Tiêu chí */
+}
+
+th {
+    background-color: #FFF0F5 !important;
+    color: #9D174D !important;
+    font-weight: 600 !important;
+}
+
+/* Khóa ô nhập tin nhắn và nút gửi luôn sáng rõ */
+[data-testid="stChatInput"] {
+    background-color: #FFFFFF !important;
+    border: 1.5px solid #F472B6 !important;
+    border-radius: 14px !important;
+}
+
+[data-testid="stChatInput"] textarea {
+    background-color: #FFFFFF !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+}
+
+[data-testid="stChatInput"] textarea::placeholder {
+    color: #9CA3AF !important;
+    -webkit-text-fill-color: #9CA3AF !important;
+}
+
+[data-testid="stChatInput"] button {
+    color: #9D174D !important;
+    background: transparent !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -159,11 +258,15 @@ with col_content:
         "Mẫu B2 (Tối Ưu)": [4.8, 4.5, 4.6, 4.3, 4.1, 4.505]
     }
     df_eval = pd.DataFrame(eval_data)
-    st.dataframe(
-        df_eval.style.highlight_max(subset=["Mẫu A", "Mẫu B", "Mẫu C", "Mẫu B2 (Tối Ưu)"], color="#FCE7F3", axis=1),
-        use_container_width=True,
-        hide_index=True
-    )
+    # Xuất Styler thành HTML tĩnh kèm highlight điểm số tối ưu và độ chính xác thập phân
+    table_html = df_eval.style.highlight_max(
+        subset=["Mẫu A", "Mẫu B", "Mẫu C", "Mẫu B2 (Tối Ưu)"],
+        color="#FCE7F3",
+        axis=1
+    ).format(precision=3).hide(axis="index").to_html()
+
+    # Hiển thị trực tiếp dưới dạng HTML
+    st.markdown(table_html, unsafe_allow_html=True)
 
     # --- PHẦN 3: NỐT HƯƠNG TINH TUÝ & AN TOÀN ---
     st.subheader("🌿 Nốt Hương Tinh Tuý & Giới Hạn An Toàn")
